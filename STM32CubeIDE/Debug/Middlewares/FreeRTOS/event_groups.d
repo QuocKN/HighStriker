@@ -1,5 +1,5 @@
 Middlewares/FreeRTOS/event_groups.o: \
- E:/Documents/TouchGFX_Projects/High_Striker/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+ E:/Documents/TouchGFX_Projects/HighStriker/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
  ../../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  ../../Core/Inc/FreeRTOSConfig.h \
  ../../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \

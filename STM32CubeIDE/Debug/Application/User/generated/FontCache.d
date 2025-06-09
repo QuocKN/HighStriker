@@ -1,5 +1,5 @@
 Application/User/generated/FontCache.o: \
- E:/Documents/TouchGFX_Projects/High_Striker/TouchGFX/generated/fonts/src/FontCache.cpp \
+ E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/generated/fonts/src/FontCache.cpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/TextProvider.hpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/Font.hpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/Unicode.hpp \

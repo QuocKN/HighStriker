@@ -1,5 +1,5 @@
 Middlewares/FreeRTOS/stream_buffer.o: \
- E:/Documents/TouchGFX_Projects/High_Striker/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+ E:/Documents/TouchGFX_Projects/HighStriker/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
  ../../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  ../../Core/Inc/FreeRTOSConfig.h \
  ../../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \

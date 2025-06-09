@@ -1,5 +1,5 @@
 Application/User/gui/FrontendApplication.o: \
- E:/Documents/TouchGFX_Projects/High_Striker/TouchGFX/gui/src/common/FrontendApplication.cpp \
+ E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/common/FrontendApplication.cpp \
  ../../TouchGFX/gui/include/gui/common/FrontendApplication.hpp \
  ../../TouchGFX/generated/gui_generated/include/gui_generated/common/FrontendApplicationBase.hpp \
  ../../Middlewares/ST/touchgfx/framework/include/mvp/MVPApplication.hpp \

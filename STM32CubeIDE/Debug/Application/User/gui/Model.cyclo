@@ -1,2 +1,4 @@
-E:/Documents/TouchGFX_Projects/High_Striker/TouchGFX/gui/src/model/Model.cpp:4:1:Model::Model()	1
-E:/Documents/TouchGFX_Projects/High_Striker/TouchGFX/gui/src/model/Model.cpp:9:6:void Model::tick()	1
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:13:1:Model::Model()	1
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:21:6:void Model::tick()	3
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:45:6:void Model::setCurrentScore(int32_t)	1
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:57:17:void update_score_from_sensor(int32_t)	2

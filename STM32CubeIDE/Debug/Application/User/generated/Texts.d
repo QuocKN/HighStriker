@@ -1,5 +1,5 @@
 Application/User/generated/Texts.o: \
- E:/Documents/TouchGFX_Projects/High_Striker/TouchGFX/generated/texts/src/Texts.cpp \
+ E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/generated/texts/src/Texts.cpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/TextProvider.hpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/Font.hpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/Unicode.hpp \

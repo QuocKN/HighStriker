@@ -1,5 +1,5 @@
 Application/User/generated/VectorFontRendererBuffers.o: \
- E:/Documents/TouchGFX_Projects/High_Striker/TouchGFX/generated/fonts/src/VectorFontRendererBuffers.cpp \
+ E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/generated/fonts/src/VectorFontRendererBuffers.cpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/VectorFontRendererImpl.hpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Types.hpp \
  ../../Middlewares/ST/touchgfx/framework/include/touchgfx/hal/Config.hpp \

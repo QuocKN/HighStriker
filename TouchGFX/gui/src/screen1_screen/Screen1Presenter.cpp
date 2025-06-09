@@ -16,3 +16,8 @@ void Screen1Presenter::deactivate()
 {
 
 }
+
+void Screen1Presenter::updateCurrentScore(int32_t value)
+{
+    view.updateCurrentScore(value); // view là instance của Screen1View, được khai báo ở presenter.hpp
+}
