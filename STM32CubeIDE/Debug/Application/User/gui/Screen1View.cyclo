@@ -7,3 +7,4 @@ E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Scree
 E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:5:1:Screen1View::Screen1View()	1
 E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:10:6:virtual void Screen1View::setupScreen()	1
 E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:20:6:void Screen1View::updateCurrentScore(int32_t)	1
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:28:6:void Screen1View::updateHighScore(int32_t)	1

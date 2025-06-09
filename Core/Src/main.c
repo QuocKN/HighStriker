@@ -23,6 +23,8 @@
 #include "app_touchgfx.h"
 #include "hx711.h"
 #include <stm32f4xx_hal_uart.h>
+#include <string.h>
+#include <stdio.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Components/ili9341/ili9341.h"
@@ -93,10 +95,18 @@ const osThreadAttr_t GUI_Task_attributes = {
   .stack_size = 8192 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for buttonTask */
+osThreadId_t buttonTaskHandle;
+const osThreadAttr_t buttonTask_attributes = {
+  .name = "buttonTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 uint8_t isRevD = 0; /* Applicable only for STM32F429I DISCOVERY REVD and above */
 // add
 extern void update_score_from_sensor(int32_t score);
+extern void update_high_score_from_sensor(int32_t score);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -112,6 +122,7 @@ static void MX_TIM7_Init(void);
 static void MX_USART1_UART_Init(void);
 void StartDefaultTask(void *argument);
 extern void TouchGFX_Task(void *argument);
+void StartButtonTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 static void BSP_SDRAM_Initialization_Sequence(SDRAM_HandleTypeDef *hsdram, FMC_SDRAM_CommandTypeDef *Command);
@@ -219,6 +230,9 @@ int main(void)
   /* creation of GUI_Task */
   GUI_TaskHandle = osThreadNew(TouchGFX_Task, NULL, &GUI_Task_attributes);
 
+  /* creation of buttonTask */
+  buttonTaskHandle = osThreadNew(StartButtonTask, NULL, &buttonTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -244,13 +258,13 @@ int main(void)
 }
 void delay_us(uint32_t us)
 {
-  __HAL_TIM_SET_COUNTER(&htim7, 0); // reset counter
-  HAL_TIM_Base_Start(&htim7);
+    __HAL_TIM_SET_COUNTER(&htim7, 0); // reset counter
+    HAL_TIM_Base_Start(&htim7);
 
-  while (__HAL_TIM_GET_COUNTER(&htim7) < us)
-    ;
+    while (__HAL_TIM_GET_COUNTER(&htim7) < us)
+        ;
 
-  HAL_TIM_Base_Stop(&htim7);
+    HAL_TIM_Base_Stop(&htim7);
 }
 /**
   * @brief System Clock Configuration
@@ -690,6 +704,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12|GPIO_PIN_13, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
+
   /*Configure GPIO pins : VSYNC_FREQ_Pin RENDER_TIME_Pin FRAME_RATE_Pin MCU_ACTIVE_Pin */
   GPIO_InitStruct.Pin = VSYNC_FREQ_Pin|RENDER_TIME_Pin|FRAME_RATE_Pin|MCU_ACTIVE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -711,6 +728,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PB12 */
   GPIO_InitStruct.Pin = GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -724,6 +747,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PD12 PD13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PG13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -731,12 +761,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PD12 PD13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
   /* USER CODE END MX_GPIO_Init_2 */
@@ -936,6 +963,7 @@ static uint8_t I2C3_ReadBuffer(uint8_t Addr, uint8_t Reg, uint8_t *pBuffer, uint
     }
 }
 
+
 /**
  * @brief  Reads 4 bytes from device.
  * @param  ReadSize: Number of bytes to read (max 4 bytes)
@@ -1069,89 +1097,70 @@ void LCD_Delay(uint32_t Delay)
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
- * @brief  Function implementing the defaultTask thread.
- * @param  argument: Not used
- * @retval None
- */
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
 int32_t read_average_offset(int samples)
+{
+    int64_t sum = 0;
+    for (int i = 0; i < samples; i++)
     {
-        int64_t sum = 0;
-        for (int i = 0; i < samples; i++) {
-            sum += HX711_ReadData(GPIOD, GPIO_PIN_12, GPIOB, GPIO_PIN_12);
-            osDelay(1); // delay nhỏ giữa mỗi lần đọc
-        }
-        return (int32_t)(sum / samples);
+        sum += HX711_ReadData(GPIOD, GPIO_PIN_12, GPIOB, GPIO_PIN_12);
+        osDelay(1); // delay nhỏ giữa mỗi lần đọc
     }
+    return (int32_t)(sum / samples);
+}
 
 int32_t get_average_raw_data()
 {
     int64_t sum = 0;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++)
+    {
         sum += HX711_ReadData(GPIOD, GPIO_PIN_12, GPIOB, GPIO_PIN_12);
         osDelay(1); // Delay nhỏ giữa các lần đọc
     }
     return (int32_t)(sum / 10);
 }
 
-int32_t Abs(int32_t value){
-	if(value<0) return -value;
-	else return value;
+int32_t Abs(int32_t value)
+{
+    if (value < 0)
+        return -value;
+    else
+        return value;
 }
-
+uint8_t lastState = 1; // assuming button is not pressed at start
+uint8_t currentState=1;
 void StartDefaultTask(void *argument)
 {
 
     osDelay(1000); // Chờ hệ thống ổn định
     char buffer[64];
-
     int32_t offset = read_average_offset(10);
     int32_t scale = 70;
-    sprintf(buffer, "Offset: %ld\r\n", offset);
-    HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
 
-//    int32_t max_weight=0;
-//    for (;;)
-//    {
-////    	int32_t weight_mg;
-////    	HAL_UART_Transmit(&huart1, "abc", 4, HAL_MAX_DELAY);
-//        osDelay(50);
-////        HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_14);
-//
-//        int32_t raw_data = get_average_raw_data();
-////        int32_t raw_data = HX711_ReadData(GPIOD, GPIO_PIN_12, GPIOB, GPIO_PIN_12);
-//        if (raw_data == 0xFFFFFFFF)
-//        {
-//            sprintf(buffer, "Lỗi: Timeout - DOUT không xuống LOW\r\n");
-//            HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
-//            continue; // bỏ qua lần đo này
-//
-//        }
-//            // Cân nặng x 1000 (mg)
-////        	int32_t weight_mg = abs((raw_data - offset) * 1000) / scale;
-//        int32_t weight_kg = abs((raw_data - offset)) / scale;
-////        if (weight_kg > max_weight_kg) {
-////            max_weight_kg = weight_kg;
-////        }
-//
-//            // Hiển thị theo định dạng x.yyy kg (ví dụ: 12345 -> 12.345kg)
-////            sprintf(buffer, "Raw: %ld | Offset: %ld | Weight: %ld.%03ld kg\r\n",
-////                    raw_data, offset, weight_mg / 1000, abs(weight_mg % 1000));
-//        sprintf(buffer, "Raw: %ld | Offset: %ld | Weight: %ld kg\r\n",raw_data, offset, weight_kg);
-//		HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
-//    }
-    int32_t max_weight_kg = 0;
-    const int trigger_threshold = 20;  // Ngưỡng lực để bắt đầu tìm max (vd: 1kg)
-    int highScore = 0;
-    int tracking_max = 0;  // Cờ bắt đầu tìm max
+    sprintf(buffer, "Offset: %ld\r\n", offset);
+        HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+    //    int32_t max_weight_kg = 0;
+    const int trigger_threshold = 20; // Ngưỡng lực để bắt đầu tìm max (vd: 1kg)
+    int32_t tracking_max = 0;         // Cờ bắt đầu tìm max
+    int32_t highScore = 0;
+
+    update_high_score_from_sensor(0);
     update_score_from_sensor(0);
     for (;;)
     {
         osDelay(20);
         int32_t raw_data = get_average_raw_data();
 
-        if (raw_data == 0xFFFFFFFF) continue;
+        if (raw_data == 0xFFFFFFFF)
+            continue;
 
         int32_t weight_kg = Abs((raw_data - offset)) / scale;
+        sprintf(buffer, "Weight: %ld kg\r\n", weight_kg);
+                HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
 
         // 📌 1. Chờ đến khi lực đủ lớn thì bắt đầu tracking
         if (!tracking_max)
@@ -1159,34 +1168,66 @@ void StartDefaultTask(void *argument)
             if (weight_kg >= trigger_threshold)
             {
                 tracking_max = 1;
-                max_weight_kg = weight_kg;
-                sprintf(buffer, "Bắt đầu tìm MAX, điểm đầu: %ld kg\r\n", weight_kg);
+                //                max_weight_kg = weight_kg;
+                sprintf(buffer, "Lực hiện tại: %ld kg\r\n", weight_kg);
                 HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+                for (int i = 0; i <= weight_kg; i++)
+                {
+                    update_score_from_sensor(i);
+                    osDelay(10);
+                }
+
+                if (weight_kg > highScore)
+                {
+                    highScore = weight_kg;
+                }
+                osDelay(200);
+                update_high_score_from_sensor(highScore);
             }
 
             // In ra để theo dõi nếu muốn
-            continue;  // chưa bắt đầu tracking → bỏ qua phần tìm max
+            continue; // chưa bắt đầu tracking → bỏ qua phần tìm max
+        }
+        if(lastState==1 || currentState==1){
+        	tracking_max = 0;
+        	update_score_from_sensor(0);
         }
 
-        // 📌 2. Đang trong chế độ tracking max
-        if (weight_kg > max_weight_kg)
-        {
-            max_weight_kg = weight_kg;
-        }
-
-        sprintf(buffer, "Weight: %ld kg | Max: %ld\r\n", weight_kg, max_weight_kg);
-        HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
-        if(max_weight_kg > highScore){
-        	highScore=max_weight_kg;
-        }
-        break;
     }
+}
 
-	for(int i=0;i<=max_weight_kg;i++){
-		update_score_from_sensor(i);
-		osDelay(10);
-	}
+/* USER CODE BEGIN Header_StartButtonTask */
+/**
+* @brief Function implementing the buttonTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartButtonTask */
+void StartButtonTask(void *argument)
+{
+  /* USER CODE BEGIN StartButtonTask */
+  /* Infinite loop */
 
+//char test[64];
+		    for(;;)
+		    {
+		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+
+//		        if (lastState == 1 && currentState == 0) {
+//		            // Nút mới được nhấn (xử lý cạnh xuống)
+////		        	HAL_UART_Transmit(&huart1, "Button press\n", 15, 10);
+//		        }
+//		        sprintf(test, "\nlast: %d, current: %d\r\n",lastState,currentState);
+////		        sprintf(test, "\n currentState: %d\r\n",currentState);
+//		        HAL_UART_Transmit(&huart1,(uint8_t *) test, strlen(test), HAL_MAX_DELAY);
+//		        osDelay(1000);
+		        lastState = currentState;
+
+		        vTaskDelay(pdMS_TO_TICKS(50)); // debounce + tiết kiệm CPU
+		    }
+
+  /* USER CODE END StartButtonTask */
 }
 
 /**

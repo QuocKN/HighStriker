@@ -1,5 +1,4 @@
 #include "hx711.h"
-
 //static GPIO_TypeDef* DOUT_PORT;
 //static uint16_t DOUT_PIN;
 //static GPIO_TypeDef* SCK_PORT;

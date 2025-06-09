@@ -475,4 +475,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/TouchGFX/generated/texts/src/TypedTextDatabase.cpp</locationURI>
 		</link>
 	</linkedResources>
+	<name>encoding</name>
+	<arguments>
+    		<dictionary>
+        			<key>RESOURCE</key>
+        			<value>UTF-8</value>
+    		</dictionary>
+	</arguments>
 </projectDescription>

@@ -15,6 +15,7 @@ public:
         model = m;
     }
     virtual void updateCurrentScore(int32_t value) {}  // phương thức abstract đươc ghi đè ở Presenter, cầu nối giữa model sang Presenter, từ Presenter sang giao diện.
+    virtual void updateHighScore(int32_t value) {}
 
 protected:
     Model* model;

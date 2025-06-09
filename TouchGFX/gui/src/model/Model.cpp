@@ -31,15 +31,14 @@ void Model::tick()
 	            modelListener->updateCurrentScore(pendingScore);
 	        }
 	    }
-//	if (hasNewScore1)
-//	    {
-//	        hasNewScore1 = false;
-//
-//	        if (modelListener)  // bên file hpp: ModelListener* modelListener;  // Con trỏ ModelListener
-//	        {
-//	            modelListener->updateHighScore(pendingScore1);
-//	        }
-//	    }
+	if (hasNewHighScore)
+	    {
+	        hasNewHighScore = false;
+	        if (modelListener)
+	        {
+	            modelListener->updateHighScore(pendingHighScore);
+	        }
+	    }
 }
 
 void Model::setCurrentScore(int32_t value)
@@ -48,11 +47,11 @@ void Model::setCurrentScore(int32_t value)
 	hasNewScore = true;
 }
 
-//void Model::setHighScore(int32_t value)
-//{
-//	pendingScore1 = value;
-//	hasNewScore1 = true;
-//}
+void Model::setHighScore(int32_t value)
+{
+    pendingHighScore = value;
+    hasNewHighScore = true;
+}
 
 extern "C" void update_score_from_sensor(int32_t score)  //khai báo code C để khi biên dịch C++ k chạy đoạn này.
 {
@@ -62,10 +61,10 @@ extern "C" void update_score_from_sensor(int32_t score)  //khai báo code C đ�
 	    }
 }
 
-//extern "C" void update_high_score_from_sensor(int32_t score)  //khai báo code C để khi biên dịch C++ k chạy đoạn này.
-//{
-//	if (modelInstance)
-//	    {
-//	        modelInstance->setHighScore(score);
-//	    }
-//}
+extern "C" void update_high_score_from_sensor(int32_t score)
+{
+    if (modelInstance)
+    {
+        modelInstance->setHighScore(score);
+    }
+}

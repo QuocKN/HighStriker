@@ -1,4 +1,6 @@
 E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:13:1:Model::Model()	0	static
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:21:6:void Model::tick()	0	static
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:45:6:void Model::setCurrentScore(int32_t)	0	static
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:57:17:void update_score_from_sensor(int32_t)	0	static
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:21:6:void Model::tick()	8	static
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:44:6:void Model::setCurrentScore(int32_t)	0	static
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:50:6:void Model::setHighScore(int32_t)	0	static
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:56:17:void update_score_from_sensor(int32_t)	0	static
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:64:17:void update_high_score_from_sensor(int32_t)	0	static

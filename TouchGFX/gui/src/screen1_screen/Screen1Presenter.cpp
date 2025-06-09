@@ -21,3 +21,8 @@ void Screen1Presenter::updateCurrentScore(int32_t value)
 {
     view.updateCurrentScore(value); // view là instance của Screen1View, được khai báo ở presenter.hpp
 }
+
+void Screen1Presenter::updateHighScore(int32_t value)
+{
+    view.updateHighScore(value);
+}

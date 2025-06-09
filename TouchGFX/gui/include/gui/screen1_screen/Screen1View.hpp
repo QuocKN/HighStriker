@@ -12,6 +12,8 @@ public:
     virtual void setupScreen();
     virtual void tearDownScreen();
     void updateCurrentScore(int32_t value);
+    void updateHighScore(int32_t value);
+
 protected:
 };
 
