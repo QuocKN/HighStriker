@@ -26,6 +26,7 @@ void Model::tick()
 	    {
 	        hasNewScore = false;
 
+
 	        if (modelListener)  // bên file hpp: ModelListener* modelListener;  // Con trỏ ModelListener
 	        {
 	            modelListener->updateCurrentScore(pendingScore);

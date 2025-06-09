@@ -25,6 +25,7 @@
 #include <stm32f4xx_hal_uart.h>
 #include <string.h>
 #include <stdio.h>
+#include <flashManager.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Components/ili9341/ili9341.h"
@@ -39,6 +40,11 @@
 /* USER CODE BEGIN PD */
 #define REFRESH_COUNT ((uint32_t)1386) /* SDRAM refresh counter */
 #define SDRAM_TIMEOUT ((uint32_t)0xFFFF)
+
+#define FLASH_USER_START_ADDR  0x080E0000  // Sector 11 (cho F429)
+#define FLASH_USER_END_ADDR     0x080E07F0  // Địa chỉ kết thúc (128KB sector - mỗi giá trị chiếm 4 byte)
+#define MAX_SLOTS               1000        // Số lượng giá trị có thể lưu trước khi xóa sector
+//#define FLASH_USER_SECTOR      FLASH_SECTOR_11
 
 /**
  * @brief  FMC SDRAM Mode definition register defines
@@ -225,6 +231,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
+
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* creation of GUI_Task */
@@ -1130,70 +1137,120 @@ int32_t Abs(int32_t value)
     else
         return value;
 }
+//
+//void saveHighScoreToFlash(int32_t score)
+//{
+//    HAL_FLASH_Unlock();
+//
+//    FLASH_Erase_Sector(FLASH_USER_SECTOR, VOLTAGE_RANGE_3);
+//
+//    HAL_FLASH_Program(TYPEPROGRAM_WORD, FLASH_USER_START_ADDR, score);
+//
+//    HAL_FLASH_Lock();
+//}
+
+//int32_t readHighScoreFromFlash()
+//{
+//    return *(int32_t*)FLASH_USER_START_ADDR;
+//}
+
 uint8_t lastState = 1; // assuming button is not pressed at start
 uint8_t currentState=1;
+
 void StartDefaultTask(void *argument)
 {
+    osDelay(400); // Chờ hệ thống ổn định
 
-    osDelay(1000); // Chờ hệ thống ổn định
     char buffer[64];
     int32_t offset = read_average_offset(10);
     int32_t scale = 70;
-
-    sprintf(buffer, "Offset: %ld\r\n", offset);
-        HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-    //    int32_t max_weight_kg = 0;
-    const int trigger_threshold = 20; // Ngưỡng lực để bắt đầu tìm max (vd: 1kg)
-    int32_t tracking_max = 0;         // Cờ bắt đầu tìm max
+//    int32_t highScore = readHighScoreFromFlash();
     int32_t highScore = 0;
+    int32_t score = 0;
+    int32_t tracking_max = 0;
+    int32_t start = 0;
 
-    update_high_score_from_sensor(0);
+    // In offset 1 lần duy nhất
+    snprintf(buffer, sizeof(buffer), "Offset: %ld\r\n", offset);
+    HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+    update_high_score_from_sensor(highScore);
     update_score_from_sensor(0);
+
+    const int trigger_threshold = 30;
+
     for (;;)
     {
         osDelay(20);
-        int32_t raw_data = get_average_raw_data();
 
+        int32_t raw_data = get_average_raw_data();
         if (raw_data == 0xFFFFFFFF)
             continue;
 
         int32_t weight_kg = Abs((raw_data - offset)) / scale;
-        sprintf(buffer, "Weight: %ld kg\r\n", weight_kg);
-                HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
 
-        // 📌 1. Chờ đến khi lực đủ lớn thì bắt đầu tracking
-        if (!tracking_max)
+        // Chỉ in nếu giá trị thay đổi
+        static int32_t prev_weight = -1;
+        if (weight_kg != prev_weight)
         {
-            if (weight_kg >= trigger_threshold)
+            prev_weight = weight_kg;
+            snprintf(buffer, sizeof(buffer), "Weight: %ld kg\r\n", weight_kg);
+            HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+        }
+
+        // Nếu chưa tracking và vượt ngưỡng
+        if (!tracking_max && weight_kg >= trigger_threshold)
+        {
+            score = weight_kg;
+            tracking_max = 1;
+
+            snprintf(buffer, sizeof(buffer), "Lực hiện tại: %ld kg\r\n", score);
+            HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+            // Tăng điểm dần
+            for (int i = 0; i <= score; i++)
             {
-                tracking_max = 1;
-                //                max_weight_kg = weight_kg;
-                sprintf(buffer, "Lực hiện tại: %ld kg\r\n", weight_kg);
-                HAL_UART_Transmit(&huart1, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-                for (int i = 0; i <= weight_kg; i++)
+                update_score_from_sensor(i);
+                osDelay(10);
+            }
+            start=1;
+            // Ghi điểm nếu đạt kỷ lục mới
+            if (score > highScore)
+            {
+                highScore = score;
+//                saveHighScoreToFlash(highScore);
+                for (int i = 0; i < 5; i++)
                 {
-                    update_score_from_sensor(i);
-                    osDelay(10);
+                    update_high_score_from_sensor(-1);
+                    osDelay(200);
+                    update_high_score_from_sensor(highScore);
+                    osDelay(200);
                 }
-
-                if (weight_kg > highScore)
-                {
-                    highScore = weight_kg;
-                }
-                osDelay(200);
-                update_high_score_from_sensor(highScore);
             }
 
-            // In ra để theo dõi nếu muốn
-            continue; // chưa bắt đầu tracking → bỏ qua phần tìm max
-        }
-        if(lastState==1 || currentState==1){
-        	tracking_max = 0;
-        	update_score_from_sensor(0);
+            osDelay(100);
+            continue;
         }
 
+        // Nháy điểm khi tracking xong
+        if (start == 1)
+        {
+            update_score_from_sensor(-1);
+            osDelay(350);
+            update_score_from_sensor(score);
+//            start = 0; // chỉ nháy 1 lần
+        }
+
+        // Reset nếu được yêu cầu
+        if (currentState == 1)
+        {
+            tracking_max = 0;
+            score = 0;
+            start = 0;
+            update_score_from_sensor(0);
+//            update_high_score_from_sensor(0);
+//            saveHighScoreToFlash(0);
+        }
     }
 }
 
@@ -1213,22 +1270,17 @@ void StartButtonTask(void *argument)
 		    for(;;)
 		    {
 		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-
-//		        if (lastState == 1 && currentState == 0) {
-//		            // Nút mới được nhấn (xử lý cạnh xuống)
-////		        	HAL_UART_Transmit(&huart1, "Button press\n", 15, 10);
-//		        }
-//		        sprintf(test, "\nlast: %d, current: %d\r\n",lastState,currentState);
-////		        sprintf(test, "\n currentState: %d\r\n",currentState);
-//		        HAL_UART_Transmit(&huart1,(uint8_t *) test, strlen(test), HAL_MAX_DELAY);
-//		        osDelay(1000);
-		        lastState = currentState;
-
+		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
 		        vTaskDelay(pdMS_TO_TICKS(50)); // debounce + tiết kiệm CPU
 		    }
 
   /* USER CODE END StartButtonTask */
 }
+
+
 
 /**
   * @brief  Period elapsed callback in non blocking mode
