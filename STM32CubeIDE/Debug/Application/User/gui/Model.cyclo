@@ -1,6 +1,8 @@
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:13:1:Model::Model()	1
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:21:6:void Model::tick()	5
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:45:6:void Model::setCurrentScore(int32_t)	1
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:51:6:void Model::setHighScore(int32_t)	1
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:57:17:void update_score_from_sensor(int32_t)	2
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:65:17:void update_high_score_from_sensor(int32_t)	2
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:14:1:Model::Model()	1
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:22:6:void Model::tick()	9
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:62:6:void Model::setCurrentScore(int32_t)	1
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:68:6:void Model::setHighScore(int32_t)	1
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:74:17:void update_score_from_sensor(int32_t)	2
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:82:17:void update_high_score_from_sensor(int32_t)	2
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:91:17:void trigger_blink_effect_from_c()	2
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/model/Model.cpp:99:17:void stop_blink_effect_from_c()	2

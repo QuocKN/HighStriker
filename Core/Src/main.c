@@ -113,6 +113,7 @@ uint8_t isRevD = 0; /* Applicable only for STM32F429I DISCOVERY REVD and above *
 // add
 extern void update_score_from_sensor(int32_t score);
 extern void update_high_score_from_sensor(int32_t score);
+extern void trigger_blink_effect_from_c(void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1156,26 +1157,26 @@ int32_t Abs(int32_t value)
 
 uint8_t lastState = 1; // assuming button is not pressed at start
 uint8_t currentState=0;
-
+int32_t highScore = 0;
+//    int32_t highScore = readHighScoreFromFlash();
 void StartDefaultTask(void *argument)
 {
-    osDelay(400); // Chờ hệ thống ổn định
+    update_high_score_from_sensor(highScore);
+    update_score_from_sensor(0);
+
+    osDelay(300); // Chờ hệ thống ổn định
 
     char buffer[64];
     int32_t offset = read_average_offset(10);
-    int32_t scale = 70;
-//    int32_t highScore = readHighScoreFromFlash();
-    int32_t highScore = 0;
+    int32_t scale = 80;
+
     int32_t score = 0;
     int32_t tracking_max = 0;
-    int32_t start = 0;
+//    int32_t start = 0;
 
     // In offset 1 lần duy nhất
     snprintf(buffer, sizeof(buffer), "Offset: %ld\r\n", offset);
     HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-
-    update_high_score_from_sensor(highScore);
-    update_score_from_sensor(0);
 
     const int trigger_threshold = 30;
 
@@ -1187,12 +1188,12 @@ void StartDefaultTask(void *argument)
         {
             tracking_max = 0;
             score = 0;
-            start = 0;
+//            start = 0;
             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET); // Bật (mức cao)
-        	osDelay(20);
+        	osDelay(150);
         	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET); // Bật (mức cao)
             update_score_from_sensor(0);
-
+            stop_blink_effect_from_c();
 //            update_high_score_from_sensor(0);
 //            saveHighScoreToFlash(0);
         }
@@ -1204,13 +1205,13 @@ void StartDefaultTask(void *argument)
         int32_t weight_kg = Abs((raw_data - offset)) / scale;
 
         // Chỉ in nếu giá trị thay đổi
-        static int32_t prev_weight = -1;
-        if (weight_kg != prev_weight)
-        {
-            prev_weight = weight_kg;
-            snprintf(buffer, sizeof(buffer), "Weight: %ld kg\r\n", weight_kg);
-            HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
-        }
+//        static int32_t prev_weight = -1;
+//        if (weight_kg != prev_weight)
+//        {
+//            prev_weight = weight_kg;
+//            snprintf(buffer, sizeof(buffer), "Weight: %ld kg\r\n", weight_kg);
+//            HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+//        }
 
         // Nếu chưa tracking và vượt ngưỡng
         if (!tracking_max && weight_kg >= trigger_threshold)
@@ -1218,8 +1219,37 @@ void StartDefaultTask(void *argument)
             score = weight_kg;
             tracking_max = 1;
 
-            snprintf(buffer, sizeof(buffer), "Lực hiện tại: %ld kg\r\n", score);
-            HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+//            snprintf(buffer, sizeof(buffer), "Lực hiện tại: %ld kg\r\n", score);
+//            HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+
+//            if(score<100){
+//                trigger_blink_effect_from_c();
+//                osDelay(200);
+//            }
+//            if(score>=100&&score<200){
+//
+//            	trigger_blink_effect_from_c();
+//            	osDelay(200);
+//                for (int i = 0; i <= score; i++)
+//                {
+//                    update_score_from_sensor(i);
+//                    osDelay(10);
+//                }
+//            	for(int i=0;i<2;i++){
+//            		trigger_blink_effect_from_c();
+//            		osDelay(1500);
+//            	}
+//            }
+//            if(score>=200&&score<300){
+//            	for(int i=0;i<3;i++){
+//            		trigger_blink_effect_from_c();
+//            		osDelay(1500);
+//            	}
+//            }
+
+            // chạy hiệu ứng
+            trigger_blink_effect_from_c();
+            osDelay(200);
 
             // Tăng điểm dần
             for (int i = 0; i <= score; i++)
@@ -1227,7 +1257,12 @@ void StartDefaultTask(void *argument)
                 update_score_from_sensor(i);
                 osDelay(10);
             }
-            start=1;
+            for(int i=0;i<3;i++){
+        		osDelay(300);
+        		update_score_from_sensor(-1);
+				osDelay(300);
+				update_score_from_sensor(score);
+        	}
             // Ghi điểm nếu đạt kỷ lục mới
             if (score > highScore)
             {
@@ -1235,10 +1270,11 @@ void StartDefaultTask(void *argument)
 //                saveHighScoreToFlash(highScore);
                 for (int i = 0; i < 5; i++)
                 {
+                	osDelay(200);
                     update_high_score_from_sensor(-1);
                     osDelay(200);
                     update_high_score_from_sensor(highScore);
-                    osDelay(200);
+
                 }
             }
 
@@ -1246,17 +1282,8 @@ void StartDefaultTask(void *argument)
             continue;
         }
 
-        // Nháy điểm khi tracking xong
-        if (start == 1)
-        {
-            update_score_from_sensor(-1);
-            osDelay(350);
-            update_score_from_sensor(score);
-//            start = 0; // chỉ nháy 1 lần
-        }
     }
 }
-
 /* USER CODE BEGIN Header_StartButtonTask */
 /**
 * @brief Function implementing the buttonTask thread.
@@ -1268,13 +1295,13 @@ void StartButtonTask(void *argument)
 {
   /* USER CODE BEGIN StartButtonTask */
   /* Infinite loop */
-char buffer[64];
+//char buffer[64];
 //char test[64];
 		    for(;;)
 		    {
 		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-		        snprintf(buffer, sizeof(buffer), "State: %d \r\n", currentState);
-		        HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+//		        snprintf(buffer, sizeof(buffer), "State: %d \r\n", currentState);
+//		        HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 		        if(currentState){
 		        	osDelay(1000);
 		        }

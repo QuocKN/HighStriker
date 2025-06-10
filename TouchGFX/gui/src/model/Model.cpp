@@ -3,10 +3,11 @@
 #include <cstdint>
 #include <touchgfx/hal/HAL.hpp>
 #include <stm32f4xx_hal.h>
-
+#include <touchgfx/Bitmap.hpp>
+#include <images/BitmapDatabase.hpp>
 // Định nghĩa biến global modelInstance, kiểu Model, cho phép truy cập lớp Model từ bất kỳ chỗ nào trong code
 Model* modelInstance = nullptr;
-
+//static Model* modelInstance1 = nullptr;
 extern UART_HandleTypeDef huart1; // khai báo để sử dụng biến đã được cài đặt ở file khác.
 
 // gọi instructor
@@ -40,6 +41,22 @@ void Model::tick()
 	            modelListener->updateHighScore(pendingHighScore);
 	        }
 	    }
+    if (shouldStartBlinkEffect)
+    {
+        shouldStartBlinkEffect = false;
+        if (modelListener)
+        {
+            modelListener->startBlinkEffect();
+        }
+    }
+    if (shouldStopBlinkEffect)
+    {
+    	shouldStopBlinkEffect = false;
+        if (modelListener)
+        {
+            modelListener->stopBlinkEffect();
+        }
+    }
 }
 
 void Model::setCurrentScore(int32_t value)
@@ -69,5 +86,23 @@ extern "C" void update_high_score_from_sensor(int32_t score)
         modelInstance->setHighScore(score);
     }
 }
+
+
+extern "C" void trigger_blink_effect_from_c()
+{
+    if (modelInstance)
+    {
+        modelInstance->shouldStartBlinkEffect = true;
+    }
+}
+
+extern "C" void stop_blink_effect_from_c()
+{
+    if (modelInstance)
+    {
+        modelInstance->shouldStopBlinkEffect = true;
+    }
+}
+
 
 

@@ -34,7 +34,7 @@ protected:
     touchgfx::Image image4;
     touchgfx::Image image3;
     touchgfx::Image image2;
-    touchgfx::Image Image1;
+    touchgfx::Image image1;
     touchgfx::TextAreaWithOneWildcard currentScore;
     touchgfx::TextAreaWithOneWildcard highScore;
 

@@ -26,4 +26,13 @@ void Screen1Presenter::updateHighScore(int32_t value)
 {
     view.updateHighScore(value);
 }
-extern volatile uint8_t userButtonPressedFlag;
+
+void Screen1Presenter::startBlinkEffect()
+{
+    view.startBlinkEffect();
+}
+
+void Screen1Presenter::stopBlinkEffect()
+{
+    view.stopBlinkEffect();
+}

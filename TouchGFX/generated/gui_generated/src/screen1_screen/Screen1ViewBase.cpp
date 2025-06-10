@@ -14,35 +14,43 @@ Screen1ViewBase::Screen1ViewBase()
 
     image8.setXY(0, 0);
     image8.setBitmap(touchgfx::Bitmap(BITMAP_SC8_ID));
+    image8.setVisible(false);
     add(image8);
 
     image7.setXY(0, 0);
     image7.setBitmap(touchgfx::Bitmap(BITMAP_SC7_ID));
+    image7.setVisible(false);
     add(image7);
 
     image6.setXY(0, 0);
     image6.setBitmap(touchgfx::Bitmap(BITMAP_SC6_ID));
+    image6.setVisible(false);
     add(image6);
 
     image5.setXY(0, 0);
     image5.setBitmap(touchgfx::Bitmap(BITMAP_SC5_ID));
+    image5.setVisible(false);
     add(image5);
 
     image4.setXY(0, 0);
     image4.setBitmap(touchgfx::Bitmap(BITMAP_SC4_ID));
+    image4.setVisible(false);
     add(image4);
 
     image3.setXY(0, 0);
     image3.setBitmap(touchgfx::Bitmap(BITMAP_SC3_ID));
+    image3.setVisible(false);
     add(image3);
 
     image2.setXY(0, 0);
     image2.setBitmap(touchgfx::Bitmap(BITMAP_SC2_ID));
+    image2.setVisible(false);
     add(image2);
 
-    Image1.setXY(0, 0);
-    Image1.setBitmap(touchgfx::Bitmap(BITMAP_SC1_ID));
-    add(Image1);
+    image1.setXY(0, 0);
+    image1.setBitmap(touchgfx::Bitmap(BITMAP_SC1_ID));
+    image1.setVisible(false);
+    add(image1);
 
     currentScore.setPosition(44, 141, 62, 26);
     currentScore.setColor(touchgfx::Color::getColorFromRGB(18, 217, 0));
