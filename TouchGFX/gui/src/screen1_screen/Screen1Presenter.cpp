@@ -1,6 +1,6 @@
 #include <gui/screen1_screen/Screen1View.hpp>
 #include <gui/screen1_screen/Screen1Presenter.hpp>
-
+#include <main.h>
 Screen1Presenter::Screen1Presenter(Screen1View& v)
     : view(v)
 {
@@ -26,3 +26,4 @@ void Screen1Presenter::updateHighScore(int32_t value)
 {
     view.updateHighScore(value);
 }
+extern volatile uint8_t userButtonPressedFlag;

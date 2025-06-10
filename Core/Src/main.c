@@ -1155,7 +1155,7 @@ int32_t Abs(int32_t value)
 //}
 
 uint8_t lastState = 1; // assuming button is not pressed at start
-uint8_t currentState=1;
+uint8_t currentState=0;
 
 void StartDefaultTask(void *argument)
 {
@@ -1182,6 +1182,20 @@ void StartDefaultTask(void *argument)
     for (;;)
     {
         osDelay(20);
+        // Reset nếu được yêu cầu
+        if (currentState == 1)
+        {
+            tracking_max = 0;
+            score = 0;
+            start = 0;
+            HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET); // Bật (mức cao)
+        	osDelay(20);
+        	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET); // Bật (mức cao)
+            update_score_from_sensor(0);
+
+//            update_high_score_from_sensor(0);
+//            saveHighScoreToFlash(0);
+        }
 
         int32_t raw_data = get_average_raw_data();
         if (raw_data == 0xFFFFFFFF)
@@ -1240,17 +1254,6 @@ void StartDefaultTask(void *argument)
             update_score_from_sensor(score);
 //            start = 0; // chỉ nháy 1 lần
         }
-
-        // Reset nếu được yêu cầu
-        if (currentState == 1)
-        {
-            tracking_max = 0;
-            score = 0;
-            start = 0;
-            update_score_from_sensor(0);
-//            update_high_score_from_sensor(0);
-//            saveHighScoreToFlash(0);
-        }
     }
 }
 
@@ -1265,16 +1268,16 @@ void StartButtonTask(void *argument)
 {
   /* USER CODE BEGIN StartButtonTask */
   /* Infinite loop */
-
+char buffer[64];
 //char test[64];
 		    for(;;)
 		    {
 		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-		        currentState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
-		        vTaskDelay(pdMS_TO_TICKS(50)); // debounce + tiết kiệm CPU
+		        snprintf(buffer, sizeof(buffer), "State: %d \r\n", currentState);
+		        HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+		        if(currentState){
+		        	osDelay(1000);
+		        }
 		    }
 
   /* USER CODE END StartButtonTask */

@@ -4,7 +4,7 @@
 E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:15:6:virtual void Screen1View::tearDownScreen()	0	static
 ../../TouchGFX/gui/include/gui/screen1_screen/Screen1View.hpp:11:13:Screen1View::~Screen1View()	8	static
 ../../TouchGFX/gui/include/gui/screen1_screen/Screen1View.hpp:11:13:virtual Screen1View::~Screen1View()	8	static
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:5:1:Screen1View::Screen1View()	8	static
-E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:10:6:virtual void Screen1View::setupScreen()	0	static
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:4:1:Screen1View::Screen1View()	8	static
+E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:9:6:virtual void Screen1View::setupScreen()	0	static
 E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:20:6:void Screen1View::updateCurrentScore(int32_t)	8	static
 E:/Documents/TouchGFX_Projects/HighStriker/TouchGFX/gui/src/screen1_screen/Screen1View.cpp:36:6:void Screen1View::updateHighScore(int32_t)	8	static

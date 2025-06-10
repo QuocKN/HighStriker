@@ -13,8 +13,8 @@ public:
     virtual void tearDownScreen();
     void updateCurrentScore(int32_t value);
     void updateHighScore(int32_t value);
-
 protected:
+
 };
 
 #endif // SCREEN1VIEW_HPP

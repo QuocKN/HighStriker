@@ -69,3 +69,5 @@ extern "C" void update_high_score_from_sensor(int32_t score)
         modelInstance->setHighScore(score);
     }
 }
+
+
