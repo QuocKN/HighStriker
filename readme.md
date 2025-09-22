@@ -1,7 +1,5 @@
 # HIGH STRIKER
 
-Báo cáo môn học Hệ Nhúng - IT4210
-
 ## GIỚI THIỆU
 
 __Đề bài__: Xây dựng phần cứng và phần mềm mô phỏng trò chơi High Striker. Hệ thống cho phép đo lực tối đa mà người dùng tác động lên cảm biến, hiển thị qua cột LED và hiển thị trên màn hình. Lưu và hiển thị giá trị kỷ lục.\
@@ -18,15 +16,6 @@ __Sản phẩm:__
 
   ![Ảnh minh họa](https://github.com/phandungnc/High_Striker_Lavie/blob/main/anh%20minh%20hoa.jpg)
 
-## TÁC GIẢ
-
-- Tên nhóm: Lavie
-- Thành viên trong nhóm
-  |STT|Họ tên|MSSV|Công việc|
-  |--:|--|--|--|
-  |1|Trần Đình Đạt|20225279|Xử lý truyền qua UART|
-  |2|Phan Đức Dũng|20225294|Thiết kế giao diện và xử lý hiển thị|
-  |3|Nguyễn Kiến Quốc|20225153|Xử lý điểm hiện tại, điểm cao nhất|
 
 ## MÔI TRƯỜNG HOẠT ĐỘNG
 
